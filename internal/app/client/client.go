@@ -13,6 +13,7 @@ import (
 
 var requestsBuffer chan struct{}
 var requestsBufferOnce sync.Once
+var requestsReadingBuffer *sync.Pool
 
 // Client ...
 type Client struct {
@@ -22,6 +23,17 @@ type Client struct {
 }
 
 func NewClient(ctx context.Context, c *Config) *Client {
+	// Init pipeline for requests.
+	requestsBufferOnce.Do(func() {
+		requestsBuffer = make(chan struct{}, c.MaxRequests)
+		// Create Pool once for reading buffer (1K size string).
+		requestsReadingBuffer = &sync.Pool{
+			New: func() interface{} {
+				return make([]byte, 1024)
+			},
+		}
+
+	})
 	return &Client{
 		ctx:    ctx,
 		config: c,
@@ -29,10 +41,6 @@ func NewClient(ctx context.Context, c *Config) *Client {
 }
 
 func (c *Client) MultiRequests(count int) error {
-	// Init pipeline for requests.
-	requestsBufferOnce.Do(func() {
-		requestsBuffer = make(chan struct{}, c.config.MaxRequests)
-	})
 	for ; count > 1; count-- {
 		requestsBuffer <- struct{}{}
 
@@ -93,7 +101,8 @@ func (c *Client) Request(ctx context.Context) (err error) {
 	}
 
 	// Get challenge
-	buffer := make([]byte, 1024)
+	buffer := requestsReadingBuffer.Get().([]byte)
+	defer requestsReadingBuffer.Put(buffer)
 	n, err := conn.Read(buffer)
 	if err != nil {
 		err = fmt.Errorf("reading error: %w", err)
