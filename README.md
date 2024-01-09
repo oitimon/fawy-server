@@ -12,7 +12,7 @@ You can switch POW Challenge driver changing **WOWS_CHALLENGE** env.
 
 * **HASHBASED**: Implemented Hash-Based Challenge Algorithm (with Leading Targets). Some key advantages are: easy to implement, security, resource intensiveness, protection against replay attacks (dynamic challenges and target prefixes), adaptability (adjustable difficulty), resistance to collusion (each participant needs to individually solve the challenge).
 * **GO-POW**: Adapter that connects external https://github.com/bwesterb/go-pow Challenge-Request library. To show how project can use external libraries.
-* **Interface** https://github.com/oitimon/fawy-server/pkg/pow/challenge.go, any driver can be implemented. **NUMERIC** is just for example and test purposes. 
+* **Interface** https://github.com/oitimon/fawy-server/blob/main/pkg/pow/challenge.go, any driver can be implemented. **NUMERIC** is just for example and test purposes. 
 
 ### Configuration
 
